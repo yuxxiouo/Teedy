@@ -119,41 +119,7 @@
     </plugins>
   </build>
 
-      <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-plugin</artifactId>
-    <version>3.0.0-M5</version> <!-- 建议用较新版本 -->
-    <configuration>
-        <!-- 测试报告输出目录，默认是 ${project.build.directory}/surefire-reports -->
-        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-        <!-- 允许测试失败也不中断构建（可选） -->
-        <testFailureIgnore>true</testFailureIgnore>
-    </configuration>
-</plugin>
-
-      <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-report-plugin</artifactId>
-    <version>3.0.0-M2</version>
-    <executions>
-        <execution>
-            <phase>verify</phase>
-            <goals>
-                <goal>report-only</goal> <!-- 推荐使用 report-only -->
-            </goals>
-        </execution>
-    </executions>
-    <configuration>
-        <!-- 指定要解析的 XML 报告位置 -->
-        <reportsDirectories>
-            <reportsDirectories>${project.build.directory}/surefire-reports</reportsDirectories>
-        </reportsDirectories>
-        <!-- 即使没有测试文件也生成报告 -->
-        <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
-        <!-- 如果只想在报告中显示失败的测试用例，可设为false，默认为true -->
-        <!-- <showSuccess>false</showSuccess> -->
-    </configuration>
-</plugin>
+    
 
   <modules>
     <module>docs-core</module>
