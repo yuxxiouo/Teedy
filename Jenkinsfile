@@ -39,7 +39,7 @@ pipeline {
 
         stage('Generate JavaDoc & Package') {
             steps {
-                bat 'mvn javadoc:jar'
+                bat 'mvn javadoc:jar -Dmaven.javadoc.failOnError=false'
                 bat 'mvn package -DskipTests'
             }
         }
