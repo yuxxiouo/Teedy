@@ -45,6 +45,7 @@ jobs:
         path: target/surefire-reports/*.xml
         reporter: java-junit
 
+
     # 生成 HTML 测试报告（使用第三方 action）
     - name: Publish Test Report HTML
       uses: mikepenz/action-junit-report@v3
