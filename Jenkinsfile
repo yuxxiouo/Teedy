@@ -1,56 +1,78 @@
+// Jenkinsfile for Teedy CI Pipeline
 pipeline {
-    agent any
-
+    agent any  // 使用任意可用节点
     tools {
-        maven 'Maven-3.8.1'
-        jdk 'JDK-17'
+        maven 'Maven3.8.1'  // Jenkins中配置的Maven工具名称
+        jdk 'JDK17'      // Jenkins中配置的JDK名称
     }
-
     stages {
-        stage('Checkout') {
-            steps { checkout scm }
-        }
-
-        stage('Maven Install') {
-            steps { bat 'mvn clean install -DskipTests' }
-        }
-
-        stage('PMD Code Check') {
-            steps { bat 'mvn pmd:pmd' }
-        }
-
-        stage('Run Tests') {
-            steps { bat 'mvn test -Dmaven.test.failure.ignore=true' }
-        }
-
-        stage('Generate Test Report') {
+        // 1. 拉取代码（SCM已配置，自动执行）
+        stage('拉取代码') {
             steps {
-                bat 'mvn surefire-report:report-only'
-                publishHTML(target: [
-    allowMissing: false,
-    alwaysLinkToLastBuild: false,
-    keepAll: true,
-    reportDir: 'target/site/',
-    reportFiles: 'surefire-report.html',
-    reportName: 'Maven Surefire Reportt'
-])
+                git url: 'https://github.com/yuxxiouo/Teedy.git', branch: 'main'
             }
         }
 
-        stage('Generate JavaDoc & Package') {
+        // 2. Maven构建项目
+        stage('Maven构建') {
             steps {
-                bat 'mvn javadoc:jar -Dmaven.javadoc.failOnError=false'
-                bat 'mvn package -DskipTests'
+                sh 'mvn clean package -DskipTests'  // 打包，跳过测试
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true  // 归档jar包
+                }
+            }
+        }
+
+        // 3. PMD静态代码检查
+        stage('PMD代码检查') {
+            steps {
+                sh 'mvn pmd:pmd'  // 执行PMD代码检查
+            }
+            post {
+                always {
+                    pmd canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'target/pmd.xml', unHealthy: ''
+                }
+            }
+        }
+
+        // 4. 运行单元测试
+        stage('运行测试') {
+            steps {
+                sh 'mvn test'  // 执行测试用例
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'  // 展示测试结果
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'target/site',
+                        reportFiles: 'index.html',
+                        reportName: '测试报告'
+                    ])
+                }
+            }
+        }
+
+        // 5. 生成JavaDoc文档
+        stage('生成JavaDoc') {
+            steps {
+                sh 'mvn javadoc:jar'  // 生成JavaDoc jar包
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'target/*-javadoc.jar', fingerprint: true  // 归档文档包
+                }
             }
         }
     }
-
+    // 构建后操作
     post {
         always {
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            archiveArtifacts artifacts: 'target/*-javadoc.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'target/surefire-reports/*', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
+            echo '流水线执行完成！'
         }
     }
 }
