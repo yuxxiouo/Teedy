@@ -2,13 +2,9 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3.8.1'   // 确保 Jenkins 全局配置中有此 Maven
-        jdk 'JDK-17'          // 确保有 JDK 11
+        maven 'Maven-3.8.1'
+        jdk 'JDK-17'
     }
-
-    stage('Clean local cache') {
-    steps {
-        bat 'rmdir /s /q "%USERPROFILE%\\.m2\\repository\\com\\sismics\\docs\\docs-core"'
 
     stages {
         stage('Checkout') {
@@ -17,9 +13,9 @@ pipeline {
             }
         }
 
-        stage('Maven Install (build & install core)') {
+        stage('Maven Install') {
             steps {
-                bat 'mvn clean install -DskipTests'   // 关键：安装所有模块到本地仓库
+                bat 'mvn clean install -DskipTests'
             }
         }
 
@@ -37,7 +33,6 @@ pipeline {
 
         stage('Generate Test Report') {
             steps {
-                // 生成 HTML 报告（需要 maven-surefire-report-plugin）
                 bat 'mvn surefire-report:report'
                 publishHTML([
                     reportDir: 'target/site',
@@ -50,14 +45,13 @@ pipeline {
         stage('Generate JavaDoc & Package') {
             steps {
                 bat 'mvn javadoc:jar'
-                bat 'mvn package -DskipTests'   // 生成可执行 JAR
+                bat 'mvn package -DskipTests'
             }
         }
     }
 
     post {
         always {
-            // 归档产物
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             archiveArtifacts artifacts: 'target/*-javadoc.jar', allowEmptyArchive: true
             archiveArtifacts artifacts: 'target/surefire-reports/*', allowEmptyArchive: true
