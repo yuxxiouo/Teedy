@@ -50,6 +50,7 @@ pipeline {
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             archiveArtifacts artifacts: 'target/*-javadoc.jar', allowEmptyArchive: true
             archiveArtifacts artifacts: 'target/surefire-reports/*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
         }
     }
 }
